@@ -1,0 +1,42 @@
+/* Fastout — supplemental styles on top of Tailwind utility classes */
+
+html, body {
+  height: 100%;
+}
+
+/* Dark, thin scrollbar for the "Engine Terminal" log panel */
+#dom-terminal {
+  scrollbar-width: thin;
+  scrollbar-color: #16a34a55 #000000;
+}
+#dom-terminal::-webkit-scrollbar {
+  width: 8px;
+}
+#dom-terminal::-webkit-scrollbar-track {
+  background: #000000;
+}
+#dom-terminal::-webkit-scrollbar-thumb {
+  background-color: #16a34a55;
+  border-radius: 999px;
+}
+
+/* Prevent the layout from jumping when Chart.js measures its canvas */
+#speedChart {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Small entrance animation for state-transition re-renders */
+#app > div {
+  animation: fastout-fade-in 0.25s ease-out;
+}
+@keyframes fastout-fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  #app > div { animation: none; }
+  .transition-all, .transition-colors, .transition-shadow { transition: none !important; }
+}
