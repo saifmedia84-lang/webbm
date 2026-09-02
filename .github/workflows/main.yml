@@ -1,0 +1,57 @@
+name: Deploy Fastout to GitHub Pages
+
+on:
+  # Runs automatically on every push to main — this is the "build engine".
+  push:
+    branches: [main]
+  # Lets you trigger a deploy manually from the Actions tab without a push.
+  workflow_dispatch:
+
+# Least-privilege token scope required for the official Pages deploy actions.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deployment in flight at a time; a new push cancels a stale one
+# that's still running, but never cancels a deploy that's already live.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Fastout is pure HTML/CSS/vanilla JS — there is no npm install or
+      # build command to run. This step exists as the single place to add
+      # one later (e.g. minification) without touching the deploy job below.
+      - name: Prepare production files
+        run: |
+          echo "Static site — no build step required."
+          echo "Files that will be published:"
+          find . -maxdepth 1 -type f \( -name "*.html" -o -name "*.css" -o -name "*.js" \) -print
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      # Uploads the repo root as the site. If you ever add a real build step
+      # that outputs to e.g. ./dist, change path: '.' to path: './dist'.
+      - name: Upload production files as Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
